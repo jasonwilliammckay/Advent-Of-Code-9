@@ -38,29 +38,40 @@ public class City
             HashMap <Integer, City> cityListByID, 
             String city1, String city2, Integer distance)
     {
-        if (!cityListByName.containsKey(city1))
-        {
-            City.addCity(cityListByName, cityListByID, city1, newCityID);
-            newCityID++;
-        }
-
-        if (!cityListByName.containsKey(city2))
-        {
-            City.addCity(cityListByName, cityListByID, city2, newCityID);
-            newCityID++;
-        }     
+        // input check, don't allow nonsensical distances
+        if (distance > 20000) 
+            distance = 20000; 
         
-        City.setDistances(cityListByName, city1, city2, distance);
+        // input check, don't allow a city to set a distance to itself or nowhere
+        if (!city1.equalsIgnoreCase(city2) && !city1.isEmpty() && !city2.isEmpty())
+        {
+            if (!cityListByName.containsKey(city1))
+            {
+                City.addCity(cityListByName, cityListByID, city1, newCityID);
+                newCityID++;
+            }
+
+            if (!cityListByName.containsKey(city2))
+            {
+                City.addCity(cityListByName, cityListByID, city2, newCityID);
+                newCityID++;
+            }
+
+            City.setDistances(cityListByName, city1, city2, distance);
+        }
     }
     
     // get the distance between two cities, given their ids
     public static int getDistance(int a, int b, HashMap <Integer, City> cityListByID)
     {
-        int distance;
-        
-        City cityA = cityListByID.get(a);
-        String cityB = cityListByID.get(b).getName();
-        distance = cityA.getDistance(cityB);
+        int distance = 0;
+                
+        if ((a != b) && (cityListByID.size() > a) && (cityListByID.size() > b))
+        {
+            City cityA = cityListByID.get(a);
+            String cityB = cityListByID.get(b).getName();
+            distance = cityA.getDistance(cityB);
+        }
         
         return distance;
     }    
@@ -85,7 +96,7 @@ public class City
     {
         City city1 = cityListByName.get(cityName1);
         city1.addDestination(cityName2, distance);
-        
+
         City city2 = cityListByName.get(cityName2);
         city2.addDestination(cityName1, distance);
     }
