@@ -24,34 +24,42 @@ import java.util.ArrayList;
 
 public class PermutationCalc 
 {
+    private static ArrayList<int[]> allRoutes = new ArrayList<>();
+    
     // builds an arrayList composed of arrays, each reflecting one
     // permutation of the possible combinations, by continually
     // checking if the current array is sorted or not yet
+    
     public static ArrayList<int[]> findAllPermutations(int permutations)
     {
-        if (permutations < 0 || permutations > 10) // recover from invalid input gracefully
-            permutations = 0;
+        permutations = validateInput(permutations);
         
-        ArrayList<int[]> allRoutes = new ArrayList<>();
-        int[] arr = setUpArray(permutations);
-        allRoutes.add(arr.clone());
+        int[] arr = firstPermutation(permutations);
+        allRoutes.add(arr.clone()); // add the starting permutation regardless
         
-        int endOfArr = arr.length-1;
-        int checkLeft= endOfArr;
+        int checkLeft = arr.length-1;
         
-        while (checkLeft > 0) // step 1
-        {
-            checkLeft--;
-            if (arr[checkLeft] < arr[checkLeft+1])
-            {
-                addNewPerm(arr, allRoutes, checkLeft); // steps 2, 3
-                checkLeft = endOfArr;  // reset the check
-            }
-        }
+        while (checkLeft > 0) // start step 1
+            checkLeft = checkIfSorted(checkLeft, arr);
+
         return allRoutes;
     }
+    
+    public static void reset()
+    {
+        allRoutes.clear();
+    }
+    
+    private static int validateInput(int permutations)
+    {
+        if (permutations < 0 || permutations > Constants.PERM_LIMIT)
+            permutations = 0;
+        
+        return permutations;
+    }
 
-    private static int[] setUpArray(int permutations)
+    // simply populates a array with incrementing integers as its default state
+    private static int[] firstPermutation(int permutations)
     {
         int[] arr = new int[permutations];
         
@@ -61,28 +69,50 @@ public class PermutationCalc
         return arr;
     }
     
-    // steps 2 and 3 from the class description
-    private static void addNewPerm(int[] arr, ArrayList<int[]> allRoutes, int checkLeft)
+    // step 1
+    // checks if steps 2 and 3 are needed
+    private static int checkIfSorted(int leftIndex, int[] arr)
     {
-        boolean swap;
-        int endOfArr = arr.length-1;
-        int checkRight = endOfArr;
+        leftIndex--;
         
-        swap = false;
-        while (swap == false)
+        if (arr[leftIndex] < arr[leftIndex+1])
         {
-            if (arr[checkLeft] < arr[checkRight])
-            {
-                swap(arr, checkLeft, checkRight); // step 2
-                reverseRange(arr, checkLeft+1, endOfArr); // step 3
-                allRoutes.add(arr.clone());
-                swap = true;
-            }
-            else
-                checkRight--;        
+            addNewPerm(arr, leftIndex); // steps 2 + 3
+            leftIndex = arr.length-1;   // reset the check
         }
+        
+        return leftIndex;
+    }
+    
+    // prepares steps 2 and 3 from the class description
+    private static void addNewPerm(int[] arr, int leftIndex)
+    {
+        swap(arr, leftIndex, findRightIndex(arr, leftIndex)); // do step 2
+        reverseRange(arr, leftIndex+1, arr.length-1);         // do step 3
+        allRoutes.add(arr.clone());
     }
 
+    // find the right-index to work with before doing swaps
+    private static int findRightIndex(int[] arr, int checkLeft)
+    {
+        int rightIndex = arr.length-1;
+        
+        while (arr[checkLeft] > arr[rightIndex])
+            rightIndex--;
+        
+        return rightIndex;
+    }    
+    
+    // step 2
+    // swaps two entries of an array given by their index number
+    private static void swap(int[]arr, int a, int b)
+    {
+        int tmp = arr[a];
+        arr[a] = arr[b];
+        arr[b] = tmp;        
+    }    
+    
+    // step 3
     // reverses the items for a given range of an array
     // the start and end values are inclusive
     private static void reverseRange(int[]arr, int start, int end)
@@ -94,12 +124,4 @@ public class PermutationCalc
             end--;
         }
     }
-    
-    // swaps two entries of an array given by their index number
-    private static void swap(int[]arr, int a, int b)
-    {
-        int tmp = arr[a];
-        arr[a] = arr[b];
-        arr[b] = tmp;        
-    }    
 }

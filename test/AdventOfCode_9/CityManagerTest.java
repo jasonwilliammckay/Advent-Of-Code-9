@@ -8,15 +8,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class CityTest {
-    
-    HashMap <String, City> cityListByName = new HashMap<>();
-    HashMap <Integer, City> cityListByID = new HashMap<>();
+public class CityManagerTest 
+{   
     String city1 = "Winnipeg";
     String city2 = "Toronto";
     Integer distance = 2235;
 
-    public CityTest() {
+    public CityManagerTest() {
     }
     
     @BeforeClass
@@ -29,13 +27,11 @@ public class CityTest {
     
     @Before
     public void setUp() {
-        cityListByName.clear();
-        cityListByID.clear();
     }
     
     @After
     public void tearDown() {
-        City.resetCID();
+        CityManager.reset();
     }
 
     /**
@@ -44,15 +40,15 @@ public class CityTest {
     @Test
     public void testGetNumCities() {
         System.out.println("getNumCities");
-        assertEquals(0, City.getNumCities());
-        City.processCities(cityListByName, cityListByID, city1, city2, distance);
-        assertEquals(2, City.getNumCities());
-        City.processCities(cityListByName, cityListByID, city1, city2, distance);
-        assertEquals(2, City.getNumCities());
-        City.processCities(cityListByName, cityListByID, "SamePlace", "SamePlace", distance);
-        assertEquals(2, City.getNumCities());
-        City.processCities(cityListByName, cityListByID, "ToNowhere", "", distance);
-        assertEquals(2, City.getNumCities());
+        assertEquals(0, CityManager.getNumCities());
+        CityManager.processCities(city1, city2, distance);
+        assertEquals(2, CityManager.getNumCities());
+        CityManager.processCities(city1, city2, distance);
+        assertEquals(2, CityManager.getNumCities());
+        CityManager.processCities("SamePlace", "SamePlace", distance);
+        assertEquals(2, CityManager.getNumCities());
+        CityManager.processCities("ToNowhere", "", distance);
+        assertEquals(2, CityManager.getNumCities());
     }
 
     /**
@@ -61,19 +57,19 @@ public class CityTest {
     @Test
     public void testGetName() {
         System.out.println("getName");
-        City.processCities(cityListByName, cityListByID, city1, city2, distance);        
+        CityManager.processCities(city1, city2, distance);        
         City examine;
         
         // check by string reference, and city id reference
-        examine = cityListByName.get(city1);
+        examine = CityManager.getCitiesByName().get(city1);
         assertEquals("Winnipeg", examine.getName());
-        examine = cityListByID.get(0);
+        examine = CityManager.getCitiesByID().get(0);
         assertEquals("Winnipeg", examine.getName());
         
         // repeat for second city
-        examine = cityListByName.get(city2);
+        examine = CityManager.getCitiesByName().get(city2);
         assertEquals("Toronto", examine.getName());        
-        examine = cityListByID.get(1);
+        examine = CityManager.getCitiesByID().get(1);
         assertEquals("Toronto", examine.getName());
     }
 
@@ -83,12 +79,12 @@ public class CityTest {
     @Test
     public void testGetID() {
         System.out.println("getID");
-        City.processCities(cityListByName, cityListByID, city1, city2, distance);        
+        CityManager.processCities(city1, city2, distance);        
         
         // ensure both newly added cities get their own unique ID
-        City examine = cityListByID.get(0);
+        City examine = CityManager.getCitiesByID().get(0);
         assertEquals(0, examine.getID());
-        examine = cityListByID.get(1);
+        examine = CityManager.getCitiesByID().get(1);
         assertEquals(1, examine.getID());
     }
 
@@ -99,21 +95,21 @@ public class CityTest {
     public void testProcessCities() {
         System.out.println("processCities");
 
-        City.processCities(cityListByName, cityListByID, city1, city2, distance);    
+        CityManager.processCities(city1, city2, distance);    
         
         // check both hashes against their City objects
-        City examine = cityListByName.get("Winnipeg");
+        City examine = CityManager.getCitiesByName().get("Winnipeg");
         assertEquals("Winnipeg", examine.getName());
         assertEquals(0, examine.getID());
 
         // check both hashes against their City objects for the second input
-        examine = cityListByName.get("Toronto");
+        examine = CityManager.getCitiesByName().get("Toronto");
         assertEquals("Toronto", examine.getName());
         assertEquals(1, examine.getID());
 
         // check distance crosslinking
-        assertEquals(2235, City.getDistance(0, 1, cityListByID));
-        assertEquals(2235, City.getDistance(1, 0, cityListByID));
+        assertEquals(2235, CityManager.getDistance(0, 1));
+        assertEquals(2235, CityManager.getDistance(1, 0));
     }
 
     /**
@@ -123,24 +119,24 @@ public class CityTest {
     public void testGetDistance_3args() {
         System.out.println("getDistance");
 
-        City.processCities(cityListByName, cityListByID, city1, city2, distance);
+        CityManager.processCities(city1, city2, distance);
         
         // from somewhere to itself should be a distance of zero
-        assertEquals(0, City.getDistance(0, 0, cityListByID));
+        assertEquals(0, CityManager.getDistance(0, 0));
         
         // from a valid city to another valid city
-        assertEquals(2235, City.getDistance(0, 1, cityListByID));
+        assertEquals(2235, CityManager.getDistance(0, 1));
         
         // from a formerly valid city to a new valid city
-        City.processCities(cityListByName, cityListByID, "Winnipeg", "Brandon", 500);
-        assertEquals(500, City.getDistance(0, 2, cityListByID));
+        CityManager.processCities("Winnipeg", "Brandon", 500);
+        assertEquals(500, CityManager.getDistance(0, 2));
         
         // check the newer city first to confirm crosslinking
-        City.processCities(cityListByName, cityListByID, "Brandon", "Toronto", 2400);
-        assertEquals(2400, City.getDistance(2, 1, cityListByID));
+        CityManager.processCities("Brandon", "Toronto", 2400);
+        assertEquals(2400, CityManager.getDistance(2, 1));
         
         // ensure nonsensical values are changed to the 'too large' default of 20k
-        City.processCities(cityListByName, cityListByID, "TooFar", "WayTooFar", 999999);
-        assertEquals(20000, City.getDistance(3, 4, cityListByID));
+        CityManager.processCities("TooFar", "WayTooFar", 999999);
+        assertEquals(0, CityManager.getDistance(3, 4));
     }
 }

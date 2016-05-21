@@ -2,12 +2,19 @@ package AdventOfCode_9;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class PermutationCalcTest {
     
     public PermutationCalcTest() {
+    }
+    
+    @After
+    public void tearDown() 
+    {
+        PermutationCalc.reset();
     }
     
     @Test
